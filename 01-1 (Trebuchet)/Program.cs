@@ -21,26 +21,22 @@ public class Program
 
         foreach (var line in lines)
         {
-            var regexMatch = Regex.Match(line, "([0-9]|one|two|three|four|five|six|seven|eight|nine)(?:.*)([0-9]|one|two|three|four|five|six|seven|eight|nine)");
+            var regexMatch = Regex.Match(line, "([0-9]|one|two|three|four|five|six|seven|eight|nine)(?:.*)([0-9]|one|two|three|four|five|six|seven|eight|nine)|([0-9])");
 
-            if (regexMatch.Success)
-            {
-                var first = ConvertToNumber(regexMatch.Groups[1].Value);
-                var last = ConvertToNumber(regexMatch.Groups[2].Value);
-                sum += first * 10 + last;
-            }
-            // this is hacky but its 3am and I want to sleep :<
-            else
-            {
-                var onlyMatch = ConvertToNumber(Regex.Match(line, "([0-9])").Value);
-                sum += onlyMatch * 11;
-            }
+            var first = ConvertToNumber(regexMatch.Groups[1].Value);
+            var last = ConvertToNumber(regexMatch.Groups[2].Value);
+            var only = ConvertToNumber(regexMatch.Groups[3].Value);
+
+            sum += first * 10 + last + only * 11;
         }
         return sum;
     }
 
     private static int ConvertToNumber(string numberString)
     {
+        if (string.IsNullOrEmpty(numberString))
+            return 0;
+
         if (int.TryParse(numberString, out int n))
             return n;
 

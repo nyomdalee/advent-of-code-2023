@@ -1,6 +1,14 @@
-﻿namespace OneOne;
+﻿using System.Text.RegularExpressions;
+
+namespace OneOne;
 public class Program
 {
+    private static readonly Dictionary<string, int> _numberTable = new()
+        {
+            {"zero",0},{"one",1},{"two",2},{"three",3},{"four",4},
+            {"five",5},{"six",6},{"seven",7},{"eight",8},{"nine",9}
+        };
+
     public static void Main()
     {
         Console.WriteLine(GetSum());
@@ -13,20 +21,29 @@ public class Program
 
         foreach (var line in lines)
         {
-            int lineTotal = 0;
-            int lastNumber = 0;
-            foreach (var character in line)
+            var regexMatch = Regex.Match(line, "([0-9]|one|two|three|four|five|six|seven|eight|nine)(?:.*)([0-9]|one|two|three|four|five|six|seven|eight|nine)");
+
+            if (regexMatch.Success)
             {
-                if (char.IsNumber(character))
-                {
-                    lastNumber = int.Parse(character.ToString());
-                    if (lineTotal == 0)
-                        lineTotal = lastNumber * 10;
-                }
+                var first = ConvertToNumber(regexMatch.Groups[1].Value);
+                var last = ConvertToNumber(regexMatch.Groups[2].Value);
+                sum += first * 10 + last;
             }
-            lineTotal += lastNumber;
-            sum += lineTotal;
+            // this is hacky but its 3am and I want to sleep :<
+            else
+            {
+                var onlyMatch = ConvertToNumber(Regex.Match(line, "([0-9])").Value);
+                sum += onlyMatch * 11;
+            }
         }
         return sum;
+    }
+
+    private static int ConvertToNumber(string numberString)
+    {
+        if (int.TryParse(numberString, out int n))
+            return n;
+
+        return _numberTable[numberString];
     }
 }

@@ -11,50 +11,39 @@ public class Program
     private static int GetSum()
     {
         var lines = File.ReadAllLines("input.txt");
-        List<Game> games = new();
+
+        int sum = 0;
 
         foreach (var line in lines)
         {
-            int gameId = 0;
             List<Set> sets = new();
+            int gameId = int.Parse(line.Split(":")[0][5..]);
 
-            var gameString = line.Split(":");
-            gameId = int.Parse(gameString[0].Substring(5));
-
-            var setStrings = gameString[1].Split(";");
-
-            foreach (var set in setStrings)
+            foreach (var set in line.Split(":")[1].Split(";"))
             {
                 int red = 0;
                 int green = 0;
                 int blue = 0;
 
-                var colors = set.Split(",");
-
-                foreach (var colorString in colors)
+                foreach (var colorString in set.Split(","))
                 {
-                    var trimmedString = colorString.Trim();
+                    if (colorString.Contains("red"))
+                        red = int.Parse((colorString[..^"red".Length]));
 
-                    if (trimmedString.Contains("red"))
-                        red = int.Parse((trimmedString.Substring(0, trimmedString.Length - "red".Length - 1)).Trim());
+                    if (colorString.Contains("green"))
+                        green = int.Parse((colorString[..^"green".Length]));
 
-                    if (trimmedString.Contains("green"))
-                        green = int.Parse((trimmedString.Substring(0, trimmedString.Length - "green".Length - 1)).Trim());
-
-                    if (trimmedString.Contains("blue"))
-                        blue = int.Parse((trimmedString.Substring(0, trimmedString.Length - "blue".Length - 1).Trim()));
+                    if (colorString.Contains("blue"))
+                        blue = int.Parse((colorString[..^"blue".Length]));
                 }
                 sets.Add(new Set(red, green, blue));
             }
+            var maxRed = sets.Max(s => s.Red);
+            var maxGreen = sets.Max(s => s.Green);
+            var maxBlue = sets.Max(s => s.Blue);
 
-            games.Add(new Game(gameId, sets));
+            sum += maxRed * maxGreen * maxBlue;
         }
-
-        var invalidGames = games
-            .Where(g => g.Sets
-            .Any(s => s.Red > 12 || s.Green > 13 || s.Blue > 14));
-
-        var validGames = games.Except(invalidGames);
-        return validGames.Select(g => g.Id).Sum();
+        return sum;
     }
 }

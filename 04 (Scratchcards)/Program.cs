@@ -17,13 +17,21 @@ public class Program
 
         var cards = lines.Select(cardString => new Card(int.Parse(cardString.Split(":")[0].Split(" ", splitOptions)[1]),
             Array.ConvertAll(cardString.Split(":")[1].Split("|")[0].Split(" ", splitOptions), s => int.Parse(s)),
-            Array.ConvertAll(cardString.Split(":")[1].Split("|")[1].Split(" ", splitOptions), s => int.Parse(s))));
+            Array.ConvertAll(cardString.Split(":")[1].Split("|")[1].Split(" ", splitOptions), s => int.Parse(s))))
+            .OrderBy(c => c.Id).ToList();
 
-        var sum = cards
-            .Select(card => card.WinningNumbers.Intersect(card.HeldNumbers))
-            .Select(matchedNumbers => matchedNumbers.Any() ? Math.Pow(2, matchedNumbers.Count() - 1) : 0)
-            .Sum();
+        var cardCount = cards.Select(c => (c.Id - 1, 1)).ToDictionary();
 
-        return (int)sum;
+        for (var i = 0; i < cards.Count(); i++)
+        {
+            var matchedNumbers = cards[i].WinningNumbers.Intersect(cards[i].HeldNumbers);
+
+            for (var j = matchedNumbers.Count(); j > 0; j--)
+            {
+                if (i + j < cards.Count)
+                    cardCount[i + j] += cardCount[i];
+            }
+        }
+        return cardCount.Select(c => c.Value).Sum();
     }
 }

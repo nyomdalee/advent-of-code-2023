@@ -2,7 +2,6 @@
 
 namespace Three;
 
-public record Suck(int lineId, IEnumerable<int> positions);
 public class Program
 {
     public static void Main()

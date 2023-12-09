@@ -13,20 +13,29 @@ public class Program
     {
         var lines = File.ReadAllLines("input.txt");
 
-        var times = Regex.Matches(lines[0], @"\d+").Select(m => int.Parse(m.Value)).ToList();
-        var records = Regex.Matches(lines[1], @"\d+").Select(m => int.Parse(m.Value)).ToList();
+        var time = double.Parse(string.Join("", Regex.Matches(lines[0], @"\d+").Select(m => m.Value)));
+        var record = double.Parse(string.Join("", Regex.Matches(lines[1], @"\d+").Select(m => m.Value)));
 
-        int total = 1;
-        for (int i = 0; i < times.Count; i++)
+        double GetBoundary()
         {
-            int raceTotal = 0;
-            for (int j = 0; j <= times[i]; j++)
+            double lowerBound = 0;
+            double upperBound = time;
+            double midPoint;
+
+            while (true)
             {
-                if (j * (times[i] - j) > records[i])
-                    raceTotal++;
+                midPoint = Math.Ceiling((upperBound + lowerBound) / 2);
+
+                if (midPoint * (time - midPoint) >= record && (midPoint - 1) * (time - midPoint + 1) < record)
+                    return midPoint;
+
+                if (midPoint * (time - midPoint) > record)
+                    upperBound = midPoint;
+
+                else
+                    lowerBound = midPoint;
             }
-            total *= raceTotal;
         }
-        return total;
+        return time - ((GetBoundary() - 1) * 2) - 1;
     }
 }

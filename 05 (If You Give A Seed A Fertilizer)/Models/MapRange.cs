@@ -1,3 +1,3 @@
 ﻿namespace Five.Models;
 
-internal record MapRange(double Destination, double Source, double Length);
+internal record MapRange(double DestinationStart, double DestinationEnd, double SourceStart, double SourceEnd);

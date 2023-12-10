@@ -10,40 +10,68 @@ public class Program
         Console.WriteLine(GetSum());
     }
 
-    private static int GetSum()
+    private static ulong GetSum()
     {
         var lines = File.ReadAllLines("input.txt");
 
         var directions = lines[0];
 
-        var Nodes = lines[2..]
+        var nodes = lines[2..]
             .Select(line => Regex.Matches(line, @"[A-Z]+"))
             .Select(matches =>
             new Node(matches[0].Value, matches[1].Value, matches[2].Value))
             .ToDictionary(n => n.Id);
 
-        var currentElement = "AAA";
+        var startingNodes = nodes.Values
+            .Select(n => n.Id)
+            .Where(n => n[2] == 'A');
 
-        int GetCount()
+        var primeFactors = startingNodes.Select(n => GetPrimeFactors(GetCount(n)));
+
+        var commonFactors = primeFactors.Aggregate((a, b) => a.Intersect(b));
+        var remainingFactors = primeFactors.SelectMany(f => f.Except(commonFactors));
+
+        return commonFactors.Union(remainingFactors).Aggregate((a, b) => a * b);
+
+        ulong GetCount(string node)
         {
-            int stepCount = 0;
+            ulong stepCount = 0;
+            var currentNode = node;
             while (true)
             {
                 foreach (var direction in directions)
                 {
-                    if (currentElement == "ZZZ")
+                    if (currentNode[2] == 'Z')
                         return stepCount;
 
-                    if (direction == 'L')
-                        currentElement = Nodes[currentElement].Left;
-                    else
-                        currentElement = Nodes[currentElement].Right;
-
+                    currentNode = direction == 'L' ? nodes[currentNode].Left : nodes[currentNode].Right;
                     stepCount++;
                 }
             }
         }
+    }
 
-        return GetCount();
+    static IEnumerable<ulong> GetPrimeFactors(ulong number)
+    {
+        List<ulong> factors = new();
+
+        while (number % 2 == 0)
+        {
+            factors.Add(2);
+            number /= 2;
+        }
+
+        for (ulong i = 3; i <= number; i += 2)
+        {
+            if (number == 1)
+                break;
+
+            while (number % i == 0)
+            {
+                factors.Add(i);
+                number /= i;
+            }
+        }
+        return factors;
     }
 }

@@ -34,10 +34,10 @@ public class Program
 
             for (int j = 1; j < layers.Count; j++)
             {
-                layers[j].Add(layers[j].Last() + layers[j - 1].Last());
+                layers[j].Insert(0, (layers[j].First() - layers[j - 1].First()));
             }
 
-            sum += layers[layers.Count - 1].Last();
+            sum += layers[layers.Count - 1].First();
         }
         return sum;
     }

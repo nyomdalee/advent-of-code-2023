@@ -25,7 +25,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "10 (Pipe Maze)", "10 (Pipe 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "11 (Cosmic Expansion)", "11 (Cosmic Expansion)\11 (Cosmic Expansion).csproj", "{BB3073CD-5FC9-48FF-B2BA-137989EFACFE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "12 (Hot Springs)", "12 (Hot Springs)\12 (Hot Springs).csproj", "{00BC403A-60D2-4F36-8F8C-90C54E26853C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "12 (Hot Springs)", "12 (Hot Springs)\12 (Hot Springs).csproj", "{00BC403A-60D2-4F36-8F8C-90C54E26853C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "13 (Point of Incidence)", "13 (Point of Incidence)\13 (Point of Incidence).csproj", "{56A02E58-B8F9-4619-89EE-95A0C61EDCEE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -81,6 +83,10 @@ Global
 		{00BC403A-60D2-4F36-8F8C-90C54E26853C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{00BC403A-60D2-4F36-8F8C-90C54E26853C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{00BC403A-60D2-4F36-8F8C-90C54E26853C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{56A02E58-B8F9-4619-89EE-95A0C61EDCEE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{56A02E58-B8F9-4619-89EE-95A0C61EDCEE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{56A02E58-B8F9-4619-89EE-95A0C61EDCEE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{56A02E58-B8F9-4619-89EE-95A0C61EDCEE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

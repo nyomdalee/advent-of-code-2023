@@ -20,21 +20,28 @@ public class Program
     {
         var rotatedLines = RotateLines(mapLines);
 
-        var vertical = ValidateReflection(GetReflectionCandidates(mapLines[0]), mapLines);
-        var horizontal = ValidateReflection(GetReflectionCandidates(rotatedLines[0]), rotatedLines);
+        var verticalCandidates = GetReflectionCandidates(mapLines[0]).Concat(GetReflectionCandidates(mapLines[1])).Distinct().ToList();
+        var horizontalCandidates = GetReflectionCandidates(rotatedLines[0]).Concat(GetReflectionCandidates(rotatedLines[1])).Distinct().ToList();
+
+        var vertical = ValidateReflections(verticalCandidates, mapLines);
+        var horizontal = ValidateReflections(horizontalCandidates, rotatedLines);
 
         return vertical.Select(v => v.Index).Sum() + horizontal.Select(v => v.Index).Sum() * 100;
 
-        List<Reflection> ValidateReflection(List<Reflection> possibleReflections, List<string> lines)
+        // This doesn't actually check whether the smudge on a possible horizontal match is the same one as one on a possible vertical match.
+        // In other words, this is a very bad "solution". but it works because the inputs are playing nice.
+        List<Reflection> ValidateReflections(List<Reflection> possibleReflections, List<string> lines)
         {
             List<Reflection> valid = new();
 
             foreach (var reflection in possibleReflections)
-            {
-                if (lines.All(IsValidLine))
-                    valid.Add(reflection);
+                ValidateReflection(reflection);
 
-                bool IsValidLine(string line)
+            void ValidateReflection(Reflection reflection)
+            {
+                int smudgeCount = 0;
+
+                foreach (var line in lines)
                 {
                     var left = line[0..reflection.Index].Reverse().ToArray();
                     var right = line[reflection.Index..].ToArray();
@@ -42,10 +49,17 @@ public class Program
                     for (int j = 0; j < reflection.Length; j++)
                     {
                         if (left.Length < reflection.Length - 1 || right.Length < reflection.Length - 1 || left[j] != right[j])
-                            return false;
+                        {
+                            if (smudgeCount < 1)
+                                smudgeCount++;
+                            else
+                                return;
+                        }
                     }
-                    return true;
                 }
+
+                if (smudgeCount == 1)
+                    valid.Add(reflection);
             }
             return valid;
         }

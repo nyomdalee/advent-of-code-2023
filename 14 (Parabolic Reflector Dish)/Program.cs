@@ -12,14 +12,67 @@ public class Program
     private static long GetSum()
     {
         var lines = File.ReadAllLines("input.txt").ToList();
-        var tiltedLines = RotateLines(lines).Select(TiltLine);
+        var charLines = RotateToInitialPosition(lines).Select(l => l.ToCharArray().ToList());
 
-        return tiltedLines.Select(l => l.Select((c, i) => c == 'O' ? l.Count - i : 0).Sum()).Sum();
+        var requestedCycles = 1000000000;
+        (var start, var end) = FindLoop(charLines);
+
+        var actualCycles = start + (requestedCycles - start) % (end - start);
+        return RunIt(charLines, actualCycles);
     }
 
-    private static List<char> TiltLine(string line)
+    private static int RunIt(IEnumerable<List<char>> lines, int cycles)
     {
-        var oldLine = line.ToCharArray().ToList();
+        var centrifugeLines = lines.ToList();
+        for (int i = 0; i < cycles; i++)
+            centrifugeLines = Cycle(centrifugeLines);
+
+        return centrifugeLines.Select(l => l.Select((c, i) => c == 'O' ? l.Count - i : 0).Sum()).Sum();
+    }
+
+    private static List<List<char>> Cycle(List<List<char>> lines)
+    {
+        for (int j = 0; j < 4; j++)
+        {
+            lines = lines.Select(TiltCharArray).ToList();
+            lines = Rotate90Clockwise(lines.ToList());
+        }
+        return lines;
+    }
+
+    private static (int LoopStart, int LoopEnd) FindLoop(IEnumerable<List<char>> lines)
+    {
+        // ghetto guids
+        List<string> positionStrings = new();
+
+        var centrifugeLines = lines.ToList();
+        var oldLines = centrifugeLines.ToList();
+        int i = 0;
+
+        while (true)
+        {
+            centrifugeLines = Cycle(centrifugeLines);
+
+            if (i == 125)
+                File.WriteAllLines("125.txt", Rotate90Clockwise(centrifugeLines.ToList()).Select(l => new string(l.ToArray())));
+
+            if (i == 184)
+                File.WriteAllLines("184.txt", Rotate90Clockwise(centrifugeLines.ToList()).Select(l => new string(l.ToArray())));
+
+            var dumboString = centrifugeLines.Select(l => string.Join("", l)).Aggregate((total, part) => $"{total} {part}");
+            if (positionStrings.Contains(dumboString))
+                return (positionStrings.IndexOf(dumboString), i);
+            else
+                positionStrings.Add(dumboString);
+
+            oldLines = centrifugeLines.ToList();
+            i++;
+        }
+    }
+
+    private static List<char> TiltCharArray(List<char> line)
+    {
+        var oldLine = line.ToList();
         var currentLine = oldLine.ToList();
         while (true)
         {
@@ -42,16 +95,32 @@ public class Program
         return currentLine;
     }
 
-    private static List<string> RotateLines(List<string> mapLines)
+    private static List<List<char>> Rotate90Clockwise(List<List<char>> mapLines)
+    {
+        List<List<char>> rotatedLines = new();
+
+        for (int i = 0; i < mapLines[0].Count; i++)
+        {
+            var sb = new StringBuilder();
+            for (int j = mapLines.Count - 1; j >= 0; j--)
+            {
+                sb.Append(mapLines[j][i]);
+            }
+            rotatedLines.Add(sb.ToString().ToCharArray().ToList());
+        }
+        return rotatedLines;
+    }
+
+    private static List<string> RotateToInitialPosition(List<string> mapLines)
     {
         List<string> rotatedLines = new();
 
-        for (int i = 0; i < mapLines[0].Length; i++)
+        for (int j = mapLines[0].Length - 1; j >= 0; j--)
         {
             var sb = new StringBuilder();
-            for (int j = 0; j < mapLines.Count; j++)
+            for (int i = 0; i < mapLines.Count; i++)
             {
-                sb.Append(mapLines[j][i]);
+                sb.Append(mapLines[i][j]);
             }
             rotatedLines.Add(sb.ToString());
         }

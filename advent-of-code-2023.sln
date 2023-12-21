@@ -29,7 +29,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "12 (Hot Springs)", "12 (Hot
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "13 (Point of Incidence)", "13 (Point of Incidence)\13 (Point of Incidence).csproj", "{56A02E58-B8F9-4619-89EE-95A0C61EDCEE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "14 (Parabolic Reflector Dish)", "14 (Parabolic Reflector Dish)\14 (Parabolic Reflector Dish).csproj", "{968BF0D2-2564-414E-845A-A29569D9637D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "14 (Parabolic Reflector Dish)", "14 (Parabolic Reflector Dish)\14 (Parabolic Reflector Dish).csproj", "{968BF0D2-2564-414E-845A-A29569D9637D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "15 (Lens Library)", "15 (Lens Library)\15 (Lens Library).csproj", "{E3237EAF-EC80-4D3E-9620-BF0084F83EE5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -93,6 +95,10 @@ Global
 		{968BF0D2-2564-414E-845A-A29569D9637D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{968BF0D2-2564-414E-845A-A29569D9637D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{968BF0D2-2564-414E-845A-A29569D9637D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E3237EAF-EC80-4D3E-9620-BF0084F83EE5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E3237EAF-EC80-4D3E-9620-BF0084F83EE5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E3237EAF-EC80-4D3E-9620-BF0084F83EE5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E3237EAF-EC80-4D3E-9620-BF0084F83EE5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

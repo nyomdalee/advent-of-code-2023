@@ -20,22 +20,37 @@ public class Program
             for (int j = 0; j < lines[0].Length; j++)
                 mazeArray[i, j] = lines[i][j];
 
-        var initialBeam = new Beam(new Point(0, 0), new Vector2(0, 1));
-
-        var beamHistory = new List<Beam>();
-        var beamList = new List<Beam>() { initialBeam };
-
-        while (beamList.Count > 0)
+        List<Beam> initialBeams = new List<Beam>();
+        for (int i = 0; i < mazeArray.GetLength(0); i++)
         {
-            foreach (var beam in beamList)
-                if (!beamHistory.Contains(beam))
-                    beamHistory.Add(beam);
-
-            beamList = beamList.SelectMany(InteractWithMaze).Except(beamHistory).ToList();
+            initialBeams.Add(new Beam(new Point(i, 0), new Vector2(0, 1)));
+            initialBeams.Add(new Beam(new Point(i, mazeArray.GetLength(1) - 1), new Vector2(0, -1)));
         }
 
-        return beamHistory.Select(b => b.NextPosition).Distinct().Count();
+        for (int i = 0; i < mazeArray.GetLength(1); i++)
+        {
+            initialBeams.Add(new Beam(new Point(0, i), new Vector2(1, 0)));
+            initialBeams.Add(new Beam(new Point(mazeArray.GetLength(1) - 1, i), new Vector2(-1, 0)));
+        }
 
+        return initialBeams.Select(EvaluateBeam).Max();
+
+        int EvaluateBeam(Beam initialBeam)
+        {
+            var beamHistory = new List<Beam>();
+            var beamList = new List<Beam>() { initialBeam };
+
+            while (beamList.Count > 0)
+            {
+                foreach (var beam in beamList)
+                    if (!beamHistory.Contains(beam))
+                        beamHistory.Add(beam);
+
+                beamList = beamList.SelectMany(InteractWithMaze).Except(beamHistory).ToList();
+            }
+            Console.WriteLine(initialBeam.ToString());
+            return beamHistory.Select(b => b.NextPosition).Distinct().Count();
+        }
 
         // Polymorphism? What is that?
         List<Beam> InteractWithMaze(Beam beam)

@@ -1,6 +1,7 @@
 ﻿namespace Seventeen.Models;
-internal class Direction(int X, int Y)
+internal class Direction(int X, int Y, int Id)
 {
+    public int Id { get; set; } = Id;
     public int X { get; } = X;
     public int Y { get; } = Y;
 

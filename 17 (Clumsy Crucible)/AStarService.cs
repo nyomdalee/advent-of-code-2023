@@ -4,14 +4,12 @@ using Seventeen.Models;
 namespace Seventeen;
 internal class AStarService
 {
-
     private readonly int[,] mazeArray = { };
     private readonly int mazeWidth; /*X*/
     private readonly int mazeHeight; /*Y*/
     private readonly Point endPoint;
 
     private List<Node> nodesToExplore = [];
-    //private List<Node> evaluatedNodes = [];
     int shortestPath = int.MaxValue;
     private int AverageTileHeat = 1;
     private int[,,,] evaluated = new int[141, 141, 4, 11];
@@ -47,7 +45,8 @@ internal class AStarService
     {
         var initialPoint = new Point(0, 0);
 
-        nodesToExplore.Add(new(0, initialPoint, new(-1, -1, 0) /*hack*/, 0, GetRemainingEstimate(initialPoint)));
+        nodesToExplore.Add(new(0, initialPoint, directions.First(x => x.X == 1), 0, GetRemainingEstimate(initialPoint)));
+        nodesToExplore.Add(new(0, initialPoint, directions.First(x => x.Y == 1), 0, GetRemainingEstimate(initialPoint)));
 
         return RunMaze();
     }
@@ -58,7 +57,6 @@ internal class AStarService
         {
             if (nodesToExplore.Count == 0 || (shortestPath != 0 && nodesToExplore.Min(x => x.Heuristic) >= shortestPath))
             {
-                //Console.WriteLine($"evaluated: {evaluatedNodes.Count}");
                 return shortestPath;
             }
 
@@ -67,8 +65,6 @@ internal class AStarService
 
             ExpandNode(nextNode);
             evaluated[nextNode.Position.X, nextNode.Position.Y, nextNode.Direction.Id, nextNode.Streak] = nextNode.HeatLoss;
-
-            //evaluatedNodes.Add(nextNode);
         }
 
         throw new ArgumentNullException("nodes exhausted");
@@ -88,8 +84,12 @@ internal class AStarService
             if (newPosition.X < 0 || newPosition.Y < 0 || newPosition.X > mazeWidth || newPosition.Y > mazeHeight)
                 continue;
 
-            // max 3 forward
-            if (node.Direction.Equals(dir) && node.Streak >= 3)
+            // min 4 forward
+            if (node.Streak < 4 && !node.Direction.Equals(dir))
+                continue;
+
+            // max 10 forward
+            if (node.Direction.Equals(dir) && node.Streak >= 10)
                 continue;
 
             int newHeatLoss = node.HeatLoss + GetTileHeat(newPosition);
@@ -98,18 +98,13 @@ internal class AStarService
             {
                 if (shortestPath > newHeatLoss)
                 {
-                    //evaluatedNodes = evaluatedNodes.OrderBy(x => x.Position.X).ThenBy(x => x.Position.Y).ToList();
                     shortestPath = newHeatLoss;
                 }
-
-                //shortestPath = shortestPath < newHeatLoss ? shortestPath : newHeatLoss;
                 continue;
             }
 
             if (newHeatLoss > shortestPath)
-            {
                 continue;
-            }
 
             HandleNewNode(node, dir, newPosition);
         }
@@ -128,15 +123,13 @@ internal class AStarService
             Streak: newStreak,
             RemainingEstimate: newEstimate);
 
-
         var wot = evaluated[newPosition.X, newPosition.Y, direction.Id, newStreak];
 
         if (wot != 0)
         {
             if (wot <= newNode.HeatLoss)
-            {
                 return;
-            }
+
             evaluated[newPosition.X, newPosition.Y, direction.Id, newStreak] = newHeatLoss;
         }
 
@@ -160,58 +153,6 @@ internal class AStarService
             nodesToExplore.Add(newNode);
         }
     }
-
-
-    //private void HandleNewNode(Node oldNode, Direction direction, Point newPosition)
-    //{
-    //    int newStreak = direction.Equals(oldNode.Direction) ? oldNode.Streak + 1 : 1;
-    //    int newHeatLoss = oldNode.HeatLoss + GetTileHeat(newPosition);
-    //    int newEstimate = GetRemainingEstimate(newPosition);
-
-    //    var newNode = new Node(
-    //        HeatLoss: newHeatLoss,
-    //        Position: newPosition,
-    //        Direction: direction,
-    //        Streak: newStreak,
-    //        RemainingEstimate: newEstimate);
-
-    //    var evaluatedNode = evaluatedNodes
-    //        .Where(x => x.Position.X == newPosition.X)
-    //        .Where(x => x.Position.Y == newPosition.Y)
-    //        .Where(x => x.Direction.X == direction.X)
-    //        .Where(x => x.Direction.Y == direction.Y)
-    //        .Where(x => x.Streak == newStreak)
-    //        .FirstOrDefault();
-
-    //    if (evaluatedNode is not null)
-    //    {
-    //        if (evaluatedNode.HeatLoss <= newNode.HeatLoss)
-    //        {
-    //            return;
-    //        }
-    //        evaluatedNodes.Remove(evaluatedNode);
-    //    }
-
-    //    var queuedNode = nodesToExplore
-    //        .Where(x => x.Position.X == newPosition.X)
-    //        .Where(x => x.Position.Y == newPosition.Y)
-    //        .Where(x => x.Direction.X == direction.X)
-    //        .Where(x => x.Direction.Y == direction.Y)
-    //        .Where(x => x.Streak == newStreak)
-    //        .FirstOrDefault();
-
-    //    if (queuedNode is null)
-    //    {
-    //        nodesToExplore.Add(newNode);
-    //        return;
-    //    }
-
-    //    if (queuedNode.HeatLoss > newNode.HeatLoss)
-    //    {
-    //        nodesToExplore.Remove(queuedNode);
-    //        nodesToExplore.Add(newNode);
-    //    }
-    //}
 
     private int GetTileHeat(Point point)
         => mazeArray[point.X, point.Y];

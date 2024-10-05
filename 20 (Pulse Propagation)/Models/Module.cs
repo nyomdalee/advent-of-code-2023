@@ -1,9 +1,9 @@
 ﻿namespace Twenty.Models;
 
-internal class Module(string name, ICollection<string> targets, ModuleType? type, bool isOn)
+internal class Module(string name, HashSet<string> targets, ModuleType? type, bool isOn)
 {
     public string Name { get; init; } = name;
-    public ICollection<string> Targets { get; init; } = targets;
+    public HashSet<string> Targets { get; init; } = targets;
     public ModuleType? Type { get; init; } = type;
     public bool IsOn { get; private set; } = isOn;
     public Dictionary<string, bool> InputHighPulse { get; set; } = [];

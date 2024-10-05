@@ -1,4 +1,5 @@
-﻿using Twenty.Models;
+﻿using System.Diagnostics;
+using Twenty.Models;
 using Module = Twenty.Models.Module;
 
 namespace Twenty;
@@ -6,30 +7,28 @@ internal class ModuleService
 {
     public long Go()
     {
-        var modules = ParseInput().ToList();
+        var sw = new Stopwatch();
+        sw.Start();
+
+        Dictionary<string, Module> modules = ParseInput();
 
         var initialInstruction = new Instruction("", false, ["broadcaster"]);
-        Queue<Instruction> queue = [];
+        Queue<Instruction> queue = new(1000);
 
-        long lowCount = 0;
-        long highCount = 0;
+        var feederModule = modules.Single(x => x.Value.Targets.Contains("rx")).Value;
+        Dictionary<string, long?> feederInputs = feederModule.InputHighPulse.Keys.ToDictionary(x => x, _ => default(long?));
+        var feederModuleName = feederModule.Name;
 
-        for (int i = 0; i < 1000; i++)
+        long i = 0;
+        while (feederInputs.Values.Any(x => x is null))
         {
+            i++;
+
             queue.Enqueue(initialInstruction);
 
             while (queue.Count > 0)
             {
                 var instruction = queue.Dequeue();
-
-                if (instruction.IsHighPulse)
-                {
-                    highCount += instruction.Targets.Count;
-                }
-                else
-                {
-                    lowCount += instruction.Targets.Count;
-                }
 
                 HandleInstruction(instruction);
             }
@@ -39,26 +38,32 @@ internal class ModuleService
         {
             foreach (var target in instruction.Targets)
             {
-                var mod = modules.SingleOrDefault(x => Equals(x.Name, target));
-
-                if (mod is null)
+                if (!modules.TryGetValue(target, out var mod))
                 {
                     continue;
                 }
 
                 var result = mod.HandleInstruction(instruction);
 
-                if (result is not null)
+                if (result is null) continue;
+
+                if (result.IsHighPulse && result.Targets.Contains(feederModuleName))
                 {
-                    queue.Enqueue(result);
+                    var srcName = result.Source;
+                    if (feederInputs[srcName] is null)
+                    {
+                        feederInputs[srcName] = i;
+                    }
                 }
+
+                queue.Enqueue(result);
             }
         }
 
-        return lowCount * highCount;
+        return Utils.Utils.LCM(feederInputs.Values.Select(x => x.Value).ToArray());
     }
 
-    private IEnumerable<Module> ParseInput()
+    private Dictionary<string, Module> ParseInput()
     {
         var input = File.ReadAllLines("input.txt");
 
@@ -67,7 +72,7 @@ internal class ModuleService
         var modules = GetModules(input).ToList();
         PopulateInputs(modules);
 
-        return modules;
+        return modules.ToDictionary(x => x.Name, x => x);
     }
 
     private void PopulateInputs(IEnumerable<Module> modules)
@@ -77,9 +82,6 @@ internal class ModuleService
             if (module.Type is not ModuleType.And) continue;
 
             module.PopulateInputs(modules);
-
-            //var inputNames = modules.Where(x => x.Targets.Contains(module.Name)).Select(x => x.Name);
-            //module.InputHighPulse = inputNames.ToDictionary(x => x, _ => false);
         }
     }
 
@@ -93,7 +95,7 @@ internal class ModuleService
             var name = type is null ? sections[0] : sections[0][1..];
             var targets = sections[1].Split(',', StringSplitOptions.TrimEntries);
 
-            yield return new(name, targets, type, false);
+            yield return new(name, [.. targets], type, false);
         }
     }
 

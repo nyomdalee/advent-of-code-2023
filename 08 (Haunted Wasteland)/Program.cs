@@ -1,5 +1,5 @@
-﻿using Eight.Models;
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
+using Eight.Models;
 
 namespace Eight;
 
@@ -10,7 +10,7 @@ public class Program
         Console.WriteLine(GetSum());
     }
 
-    private static ulong GetSum()
+    private static long GetSum()
     {
         var lines = File.ReadAllLines("input.txt");
 
@@ -26,16 +26,11 @@ public class Program
             .Select(n => n.Id)
             .Where(n => n[2] == 'A');
 
-        var primeFactors = startingNodes.Select(n => GetPrimeFactors(GetCount(n)));
+        return Utils.Utils.LCM(startingNodes.Select(GetCount).ToArray());
 
-        var commonFactors = primeFactors.Aggregate((a, b) => a.Intersect(b));
-        var remainingFactors = primeFactors.SelectMany(f => f.Except(commonFactors));
-
-        return commonFactors.Union(remainingFactors).Aggregate((a, b) => a * b);
-
-        ulong GetCount(string node)
+        long GetCount(string node)
         {
-            ulong stepCount = 0;
+            long stepCount = 0;
             var currentNode = node;
             while (true)
             {
@@ -49,29 +44,5 @@ public class Program
                 }
             }
         }
-    }
-
-    static IEnumerable<ulong> GetPrimeFactors(ulong number)
-    {
-        List<ulong> factors = new();
-
-        while (number % 2 == 0)
-        {
-            factors.Add(2);
-            number /= 2;
-        }
-
-        for (ulong i = 3; i <= number; i += 2)
-        {
-            if (number == 1)
-                break;
-
-            while (number % i == 0)
-            {
-                factors.Add(i);
-                number /= i;
-            }
-        }
-        return factors;
     }
 }

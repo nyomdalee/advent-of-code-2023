@@ -41,9 +41,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "18 (Lavaduct Lagoon)", "18 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "19 (Aplenty)", "19 (Aplenty)\19 (Aplenty).csproj", "{A9170636-63AE-4C83-86C4-021FBBEC962D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "20 (Pulse Propagation)", "20 (Pulse Propagation)\20 (Pulse Propagation).csproj", "{ECEA15A0-CB1B-4A0E-BD48-E48635032191}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "20 (Pulse Propagation)", "20 (Pulse Propagation)\20 (Pulse Propagation).csproj", "{ECEA15A0-CB1B-4A0E-BD48-E48635032191}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Utils", "Utils\Utils.csproj", "{9EC141FC-31CF-4734-9ADE-82D4B336974F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Utils", "Utils\Utils.csproj", "{9EC141FC-31CF-4734-9ADE-82D4B336974F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "21 (Step Counter)", "21 (Step Counter)\21 (Step Counter).csproj", "{3C1DE95C-C3A2-4D12-9376-1FE2487ABBB3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -135,6 +137,10 @@ Global
 		{9EC141FC-31CF-4734-9ADE-82D4B336974F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9EC141FC-31CF-4734-9ADE-82D4B336974F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9EC141FC-31CF-4734-9ADE-82D4B336974F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3C1DE95C-C3A2-4D12-9376-1FE2487ABBB3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3C1DE95C-C3A2-4D12-9376-1FE2487ABBB3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3C1DE95C-C3A2-4D12-9376-1FE2487ABBB3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3C1DE95C-C3A2-4D12-9376-1FE2487ABBB3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

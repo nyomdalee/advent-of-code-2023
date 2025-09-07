@@ -1,4 +1,5 @@
 ﻿namespace Nineteen.Models;
+
 public class Workflow
 {
     public string Name { get; set; }

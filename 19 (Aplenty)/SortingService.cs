@@ -3,67 +3,98 @@
 namespace Nineteen;
 internal class SortingService
 {
+    private long total = 0;
     public long Go()
     {
-        var (workflows, materials) = ParseInput();
+        var workflows = ParseInput();
+        var dictionary = workflows.ToDictionary(w => w.Name, w => w);
 
-        var inWorkflow = workflows.Single(x => Equals(x.Name, "in"));
-
-        long sum = 0;
-        foreach (var mat in materials)
+        var initialCandidate = new Candidate("in", 0)
         {
-            sum += HandleMaterial(mat, workflows, inWorkflow);
+            Properties =
+            [
+                new("x", 1, 4000),
+                new("m", 1, 4000),
+                new("a", 1, 4000),
+                new("s", 1, 4000),
+            ],
+        };
+
+        var q = new Queue<Candidate>();
+        q.Enqueue(initialCandidate);
+
+        while (q.Count > 0)
+        {
+            HandleNext(q.Dequeue(), q, dictionary);
         }
 
-        return sum;
+        return total;
     }
 
-    private long HandleMaterial(Material mat, List<Workflow> workflows, Workflow inWorkflow)
+    private void HandleNext(Candidate candidate, Queue<Candidate> q, Dictionary<string, Workflow> dict)
     {
-        var currentWorkflow = inWorkflow;
-        while (true)
+        if (candidate.NextPipe == "R" || !IsValidCandidate(candidate))
         {
-            foreach (var instruction in currentWorkflow.Instructions)
+            return;
+        }
+
+        if (candidate.NextPipe == "A")
+        {
+            total += SumCandidate(candidate);
+            return;
+        }
+
+        var wf = dict[candidate.NextPipe];
+        var instruction = wf.Instructions[candidate.NextPipeInstruction];
+
+        if (instruction.IsEnd)
+        {
+            q.Enqueue(candidate with { NextPipe = instruction.Result, NextPipeInstruction = 0 });
+        }
+        else
+        {
+            foreach (var branch in SplitCandidate(candidate, instruction))
             {
-                if (IsCompliant(mat, instruction))
-                {
-                    if (Equals(instruction.Result, "R"))
-                    {
-                        return 0;
-                    }
-
-                    if (Equals(instruction.Result, "A"))
-                    {
-                        return SumMaterial(mat);
-                    }
-
-                    currentWorkflow = workflows.Single(x => Equals(x.Name, instruction.Result));
-                    break;
-                }
+                q.Enqueue(branch);
             }
         }
     }
 
-    private long SumMaterial(Material mat) => mat.Properties.Sum(x => x.Value);
-
-    private bool IsCompliant(Material mat, Instruction instruction)
+    private static IEnumerable<Candidate> SplitCandidate(Candidate candidate, Instruction instruction)
     {
-        if (string.IsNullOrWhiteSpace(instruction.Property))
+        var prop = candidate.Properties.First(p => p.Name == instruction.Property);
+        var others = candidate.Properties.Where(p => p.Name != instruction.Property).ToList();
+
+        (Property passing, Property failing) = instruction.Comparison switch
         {
-            return true;
-        }
+            ">" => (
+                prop with { MinValue = Math.Max(prop.MinValue, instruction.Value + 1) },
+                prop with { MaxValue = Math.Min(prop.MaxValue, instruction.Value) }),
+            "<" => (
+                prop with { MaxValue = Math.Min(prop.MaxValue, instruction.Value - 1) },
+                prop with { MinValue = Math.Max(prop.MinValue, instruction.Value) }),
+            _ => throw new InvalidOperationException($"Unknown comparison: {instruction.Comparison}")
+        };
 
-        var instructedProp = mat.Properties.Single(x => Equals(x.Name, instruction.Property));
+        yield return candidate with
+        {
+            Properties = [.. others, passing],
+            NextPipe = instruction.Result,
+            NextPipeInstruction = 0
+        };
 
-        var propValue = instructedProp.Value;
-        var insValue = instruction.Value;
-
-        return Equals(instruction.Comparison, ">")
-            ? propValue > insValue
-            : propValue < insValue;
+        yield return candidate with
+        {
+            Properties = [.. others, failing],
+            NextPipeInstruction = candidate.NextPipeInstruction + 1
+        };
     }
 
-    private (List<Workflow> workflowList, List<Material> materialList) ParseInput()
+    private static bool IsValidCandidate(Candidate candidate) => candidate.Properties.All(x => x.MinValue <= x.MaxValue);
+
+    private static long SumCandidate(Candidate candidate) => candidate.Properties.Aggregate(1L, (acc, p) => acc * (p.MaxValue - p.MinValue + 1));
+
+    private static List<Workflow> ParseInput()
     {
         var input = File.ReadAllText("input.txt");
 
@@ -79,18 +110,10 @@ internal class SortingService
             workflowList.Add(ParseWorkflow(workflowString));
         }
 
-        var materialStrings = sections[1].Split("\r\n");
-
-        List<Material> materialList = [];
-        foreach (var materialString in materialStrings)
-        {
-            materialList.Add(ParseMaterial(materialString));
-        }
-
-        return (workflowList, materialList);
+        return workflowList;
     }
 
-    private Workflow ParseWorkflow(string input)
+    private static Workflow ParseWorkflow(string input)
     {
         if (string.IsNullOrEmpty(input)) throw new ArgumentException("Input cannot be null or empty");
 
@@ -101,13 +124,16 @@ internal class SortingService
 
         string instructionsPart = parts[1].TrimEnd('}');
 
+        int index = 0;
         foreach (var instruction in instructionsPart.Split(','))
         {
             if (!instruction.Contains(':'))
             {
                 workflow.Instructions.Add(new Instruction
                 {
-                    Result = instruction
+                    Index = index++,
+                    Result = instruction,
+                    IsEnd = true
                 });
             }
             else
@@ -116,34 +142,15 @@ internal class SortingService
 
                 workflow.Instructions.Add(new Instruction
                 {
+                    Index = index++,
                     Property = finalSplit[0][..1],
                     Comparison = finalSplit[0][1..2],
                     Value = int.Parse(finalSplit[0][2..]),
                     Result = finalSplit[1],
+                    IsEnd = false
                 });
             }
         }
         return workflow;
-    }
-
-    private Material ParseMaterial(string input)
-    {
-        if (string.IsNullOrEmpty(input)) throw new ArgumentException("Input cannot be null or empty");
-
-        var material = new Material();
-
-        string propertiesPart = input.Trim('{', '}');
-
-        foreach (var propertyPair in propertiesPart.Split(','))
-        {
-            var parts = propertyPair.Split('=');
-
-            material.Properties.Add(new Property
-            {
-                Name = parts[0],
-                Value = int.Parse(parts[1])
-            });
-        }
-        return material;
     }
 }

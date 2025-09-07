@@ -1,4 +1,4 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Runtime.InteropServices;
 using Twelve.Models;
 
 namespace Twelve;
@@ -12,46 +12,112 @@ public class Program
 
     private static long GetSum()
     {
-        var lines = File.ReadAllLines("input.txt").ToList();
-        List<SpringLine> springsLines = lines
-            .Select(l => new SpringLine(l.Split(' ')[0],
-            Array.ConvertAll(l.Split(' ')[1].Split(","), s => int.Parse(s)))).ToList();
+        var springsLines = File.ReadAllLines("input.txt")
+            .Select(line =>
+            {
+                var parts = line.Split(' ');
+                var text = parts[0];
+                var damagedGroups = parts[1].Split(',').Select(int.Parse).ToArray();
 
-        return springsLines.Select(l => GetArrangmentCount(l)).Sum();
+                text = string.Concat(Enumerable.Repeat(text + "?", 4)) + text;
+                damagedGroups = [.. Enumerable.Repeat(damagedGroups, 5).SelectMany(arr => arr)];
+
+                return new SpringLine(text, damagedGroups);
+            })
+            .ToList();
+
+        return springsLines.Sum(GetArrangmentCount);
     }
 
-    static int GetArrangmentCount(SpringLine springLine)
+    private static void AddOperational(Dictionary<ThumbprintKey, long> cache, KeyValuePair<ThumbprintKey, long> kvp) =>
+        AddOrUpdate(cache, kvp.Key with { IsActive = false, Length = kvp.Key.Length + 1 }, kvp.Value);
+
+    private static void AddDamaged(Dictionary<ThumbprintKey, long> cache, KeyValuePair<ThumbprintKey, long> kvp, int[] expectedGroups)
     {
-        return GetPermutations(springLine.Text)
-            .Where(p => Regex.IsMatch(p, GetRegex(springLine.DamagedGroups))).Count();
+        var newPrint = new List<int>(kvp.Key.Thumbprint);
+        if (!kvp.Key.IsActive || kvp.Key.Thumbprint.Length == 0)
+        {
+            newPrint.Add(1);
+        }
+        else
+        {
+            newPrint[^1]++;
+        }
+
+        if (IsValidRunningThumbprint(CollectionsMarshal.AsSpan(newPrint), expectedGroups))
+        {
+            AddOrUpdate(cache, kvp.Key with { Thumbprint = [.. newPrint], IsActive = true, Length = kvp.Key.Length + 1 }, kvp.Value);
+        }
     }
 
-    static List<string> GetPermutations(string text)
+    private static long GetArrangmentCount(SpringLine springLine)
     {
-        List<string> currentSet = new() { string.Empty };
+        var text = springLine.Text;
+
+        Dictionary<ThumbprintKey, long> currentCache = new()
+        {
+            [new ThumbprintKey([], false, 0)] = 1
+        };
 
         for (int i = 0; i < text.Length; i++)
         {
-            List<string> newSet = new();
+            Dictionary<ThumbprintKey, long> nextCache = [];
 
-            foreach (string s in currentSet)
+            foreach (var kvp in currentCache)
             {
-                if (text[i] == '.' || text[i] == '#')
-                    newSet.Add($"{s}{text[i]}");
-
+                if (text[i] == '.')
+                {
+                    AddOperational(nextCache, kvp);
+                }
+                else if (text[i] == '#')
+                {
+                    AddDamaged(nextCache, kvp, springLine.DamagedGroups);
+                }
                 else
                 {
-                    newSet.Add($"{s}#");
-                    newSet.Add($"{s}.");
+                    AddOperational(nextCache, kvp);
+                    AddDamaged(nextCache, kvp, springLine.DamagedGroups);
                 }
             }
-            currentSet = newSet;
+
+            if (i == text.Length - 1)
+            {
+                return nextCache
+                    .Select(x => (x.Key.Thumbprint, x.Value))
+                    .Where(s => IsValidFinalThumbprint(s.Thumbprint, springLine.DamagedGroups))
+                    .Sum(x => x.Value);
+            }
+            currentCache = nextCache;
         }
-        return currentSet.Select(s => s.Contains('#') ? s[s.IndexOf('#')..(s.LastIndexOf('#') + 1)] : s).ToList();
+        throw new Exception("Should not reach here");
     }
 
-    static string GetRegex(int[] damagedGroups)
+    private static bool IsValidRunningThumbprint(ReadOnlySpan<int> current, ReadOnlySpan<int> damagedGroups)
     {
-        return $"^{string.Join(@"\.+", damagedGroups.Select(g => $"#{{{g}}}"))}$";
+        if (current.Length > damagedGroups.Length)
+        {
+            return false;
+        }
+
+        for (int i = 0; i < current.Length - 1; i++)
+        {
+            if (current[i] != damagedGroups[i])
+            {
+                return false;
+            }
+        }
+
+        return current.Length <= 0 || current[^1] <= damagedGroups[current.Length - 1];
+    }
+
+    private static bool IsValidFinalThumbprint(int[] current, int[] damagedGroups) =>
+        current.Length == damagedGroups.Length && current.SequenceEqual(damagedGroups);
+
+    private static void AddOrUpdate(Dictionary<ThumbprintKey, long> cache, ThumbprintKey key, long count)
+    {
+        if (!cache.TryAdd(key, count))
+        {
+            cache[key] += count;
+        }
     }
 }

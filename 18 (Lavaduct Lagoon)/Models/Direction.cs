@@ -1,5 +1,6 @@
 ﻿namespace Eighteen.Models;
-internal class Direction(int X, int Y, char Id)
+
+public class Direction(int X, int Y, char Id)
 {
     public char Id { get; set; } = Id;
     public int X { get; } = X;
